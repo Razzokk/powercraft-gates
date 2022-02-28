@@ -71,7 +71,7 @@ public class TaskScheduler
 			this.world = world;
 			this.delay = delay;
 			this.task = task;
-			this.scheduledTime = world.getWorldInfo().getGameTime();
+			this.scheduledTime = world.getGameTime();
 		}
 	}
 }

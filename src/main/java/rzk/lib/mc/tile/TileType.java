@@ -25,10 +25,10 @@ public final class TileType<T extends TileEntity> extends TileEntityType<T>
 	}
 
 	@Override
-	public boolean isValidBlock(Block block)
+	public boolean isValid(Block block)
 	{
 		if (hasValidBlocks)
-			return super.isValidBlock(block);
+			return super.isValid(block);
 		return true;
 	}
 }

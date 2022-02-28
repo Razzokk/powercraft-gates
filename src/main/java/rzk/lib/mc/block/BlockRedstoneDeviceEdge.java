@@ -61,14 +61,14 @@ public abstract class BlockRedstoneDeviceEdge extends BlockRedstoneDevice
 	@Override
 	public void onInputChanged(BlockState state, World world, BlockPos pos, Direction side)
 	{
-		if (!world.isRemote)
+		if (!world.isClientSide)
 			WorldUtils.ifTilePresent(world, pos, ITileRedstoneStates.class, tile -> updateRedstoneState(world, pos, state, tile, side));
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
+	public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
 	{
-		if (!world.isRemote)
+		if (!world.isClientSide)
 			WorldUtils.ifTilePresent(world, pos, ITileRedstoneStates.class, tile -> Direction.Plane.HORIZONTAL.forEach(side -> updateRedstoneState(world, pos, state, tile, side)));
 	}
 }

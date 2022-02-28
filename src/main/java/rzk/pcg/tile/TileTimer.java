@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.ITickableTileEntity;
+import net.minecraftforge.common.util.Constants;
 import rzk.lib.mc.tile.TileRedstoneDevice;
 import rzk.lib.mc.util.ObjectUtils;
 import rzk.pcg.block.BlockTimer;
@@ -35,14 +36,15 @@ public class TileTimer extends TileRedstoneDevice implements ITickableTileEntity
 	public void setDelay(int delay)
 	{
 		neededTicks = delay;
-		world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), 3);
+		level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Constants.BlockFlags.DEFAULT);
+		setChanged();
 	}
 
 	public void setEnabled(boolean state)
 	{
 		enabled = state;
 		currentTicks = 0;
-		markDirty();
+		setChanged();
 	}
 
 	private void setTimerState()
@@ -51,14 +53,14 @@ public class TileTimer extends TileRedstoneDevice implements ITickableTileEntity
 		if (block instanceof BlockTimer.Delay)
 		{
 			setEnabled(false);
-			ObjectUtils.ifCastable(getBlockState().getBlock(), BlockTimer.Delay.class, blockTimer -> blockTimer.setPoweredState(getBlockState(), world, pos, blockTimer.isOnTimer()));
+			ObjectUtils.ifCastable(getBlockState().getBlock(), BlockTimer.Delay.class, blockTimer -> blockTimer.setPoweredState(getBlockState(), level, worldPosition, blockTimer.isOnTimer()));
 		}
 		else
 		{
 			ObjectUtils.ifCastable(getBlockState().getBlock(), BlockTimer.class, blockTimer ->
 			{
-				blockTimer.setPoweredState(getBlockState(), world, pos, true);
-				blockTimer.scheduleTickIfNotScheduled(world, pos, 2);
+				blockTimer.setPoweredState(getBlockState(), level, worldPosition, true);
+				blockTimer.scheduleTickIfNotScheduled(level, worldPosition, 2);
 			});
 		}
 	}
@@ -66,18 +68,14 @@ public class TileTimer extends TileRedstoneDevice implements ITickableTileEntity
 	@Override
 	public void tick()
 	{
-		if (!world.isRemote && enabled)
+		if (!level.isClientSide && enabled)
 		{
-			if (currentTicks >= neededTicks - 1)
+			if (++currentTicks >= neededTicks)
 			{
 				setTimerState();
 				currentTicks = 0;
 			}
-			else
-			{
-				currentTicks++;
-			}
-			markDirty();
+			setChanged();
 		}
 	}
 
@@ -85,38 +83,38 @@ public class TileTimer extends TileRedstoneDevice implements ITickableTileEntity
 	@Nullable
 	public SUpdateTileEntityPacket getUpdatePacket()
 	{
-		return new SUpdateTileEntityPacket(this.pos, 3, getUpdateTag());
+		return new SUpdateTileEntityPacket(worldPosition, 3, getUpdateTag());
 	}
 
 	@Override
 	public CompoundNBT getUpdateTag()
 	{
-		return write(new CompoundNBT());
+		return save(new CompoundNBT());
 	}
 
 	@Override
 	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt)
 	{
 		super.onDataPacket(net, pkt);
-		handleUpdateTag(getBlockState(), pkt.getNbtCompound());
+		handleUpdateTag(getBlockState(), pkt.getTag());
 	}
 
 	@Override
-	public void read(BlockState state, CompoundNBT compound)
+	public void load(BlockState state, CompoundNBT nbt)
 	{
-		super.read(state, compound);
-		neededTicks = compound.getInt("neededTicks");
-		currentTicks = compound.getInt("currentTicks");
-		enabled = compound.getBoolean("enabled");
+		super.load(state, nbt);
+		neededTicks = nbt.getInt("neededTicks");
+		currentTicks = nbt.getInt("currentTicks");
+		enabled = nbt.getBoolean("enabled");
 	}
 
 	@Override
-	public CompoundNBT write(CompoundNBT compound)
+	public CompoundNBT save(CompoundNBT nbt)
 	{
-		super.write(compound);
-		compound.putInt("neededTicks", neededTicks);
-		compound.putInt("currentTicks", currentTicks);
-		compound.putBoolean("enabled", enabled);
-		return compound;
+		super.save(nbt);
+		nbt.putInt("neededTicks", neededTicks);
+		nbt.putInt("currentTicks", currentTicks);
+		nbt.putBoolean("enabled", enabled);
+		return nbt;
 	}
 }

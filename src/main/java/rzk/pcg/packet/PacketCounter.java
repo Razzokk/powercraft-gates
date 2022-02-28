@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 
 public class PacketCounter extends Packet
 {
-	private int maxCount;
-	private BlockPos pos;
+	private final int maxCount;
+	private final BlockPos pos;
 
 	public PacketCounter(int maxCount, BlockPos pos)
 	{
@@ -26,14 +26,14 @@ public class PacketCounter extends Packet
 	{
 		super(buffer);
 		maxCount = buffer.readInt();
-		pos = BlockPos.fromLong(buffer.readLong());
+		pos = BlockPos.of(buffer.readLong());
 	}
 
 	@Override
 	public void toBytes(PacketBuffer buffer)
 	{
 		buffer.writeInt(maxCount);
-		buffer.writeLong(pos.toLong());
+		buffer.writeLong(pos.asLong());
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class PacketCounter extends Packet
 		{
 			ServerPlayerEntity player = ctx.get().getSender();
 			ServerWorld world;
-			if (player != null && (world = player.getServerWorld()).isBlockLoaded(pos))
+			if (player != null && (world = player.getLevel()).isLoaded(pos))
 				WorldUtils.ifTilePresent(world, pos, TileCounter.class, tile -> tile.setMaxCount(maxCount));
 		});
 		ctx.get().setPacketHandled(true);

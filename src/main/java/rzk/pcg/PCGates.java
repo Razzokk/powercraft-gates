@@ -2,7 +2,6 @@ package rzk.pcg;
 
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -15,8 +14,6 @@ import rzk.pcg.registry.ModBlocks;
 import rzk.pcg.registry.ModItems;
 import rzk.pcg.registry.ModTiles;
 
-import java.util.Comparator;
-
 @Mod(PCGates.MOD_ID)
 public class PCGates
 {
@@ -26,7 +23,7 @@ public class PCGates
 	{
 		@Override
 		@OnlyIn(Dist.CLIENT)
-		public ItemStack createIcon()
+		public ItemStack makeIcon()
 		{
 			return new ItemStack(ModBlocks.GATE_AND_3.get());
 		}

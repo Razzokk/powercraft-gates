@@ -28,7 +28,7 @@ public class TileCounter extends TileRedstoneDevice
 	public void reset()
 	{
 		count(-counter);
-		markDirty();
+		setChanged();
 	}
 
 	public void count(int amount)
@@ -36,14 +36,14 @@ public class TileCounter extends TileRedstoneDevice
 		counter = Utils.constrain(counter + amount, 0, maxCount);
 		ObjectUtils.ifCastable(getBlockState().getBlock(), BlockCounter.class, blockCounter ->
 		{
-			if (counter >= maxCount && !getBlockState().get(BlockStateProperties.POWERED))
-				blockCounter.setPoweredState(getBlockState(), world, pos, true);
-			else if (counter < maxCount && getBlockState().get(BlockStateProperties.POWERED))
-				blockCounter.setPoweredState(getBlockState(), world, pos, false);
+			if (counter >= maxCount && !getBlockState().getValue(BlockStateProperties.POWERED))
+				blockCounter.setPoweredState(getBlockState(), level, worldPosition, true);
+			else if (counter < maxCount && getBlockState().getValue(BlockStateProperties.POWERED))
+				blockCounter.setPoweredState(getBlockState(), level, worldPosition, false);
 			else
-				world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), 2);
-			markDirty();
+				level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 2);
 		});
+		setChanged();
 	}
 
 	public int getCounter()
@@ -63,42 +63,43 @@ public class TileCounter extends TileRedstoneDevice
 			this.maxCount = maxCount;
 			count(0);
 		}
+		setChanged();
 	}
 
 	@Override
 	@Nullable
 	public SUpdateTileEntityPacket getUpdatePacket()
 	{
-		return new SUpdateTileEntityPacket(this.pos, 3, getUpdateTag());
+		return new SUpdateTileEntityPacket(worldPosition, 3, getUpdateTag());
 	}
 
 	@Override
 	public CompoundNBT getUpdateTag()
 	{
-		return write(new CompoundNBT());
+		return save(new CompoundNBT());
 	}
 
 	@Override
 	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt)
 	{
 		super.onDataPacket(net, pkt);
-		handleUpdateTag(getBlockState(), pkt.getNbtCompound());
+		handleUpdateTag(getBlockState(), pkt.getTag());
 	}
 
 	@Override
-	public void read(BlockState state, CompoundNBT compound)
+	public void load(BlockState state, CompoundNBT nbt)
 	{
-		super.read(state, compound);
-		maxCount = compound.getInt("maxCount");
-		counter = compound.getInt("counter");
+		super.load(state, nbt);
+		maxCount = nbt.getInt("maxCount");
+		counter = nbt.getInt("counter");
 	}
 
 	@Override
-	public CompoundNBT write(CompoundNBT compound)
+	public CompoundNBT save(CompoundNBT nbt)
 	{
-		super.write(compound);
-		compound.putInt("maxCount", maxCount);
-		compound.putInt("counter", counter);
-		return compound;
+		super.save(nbt);
+		nbt.putInt("maxCount", maxCount);
+		nbt.putInt("counter", counter);
+		return nbt;
 	}
 }

@@ -20,23 +20,23 @@ public class BlockLatch extends BlockGateBase
 	@Override
 	public boolean isInputSide(BlockState state, Direction side)
 	{
-		Direction facing = state.get(HORIZONTAL_FACING);
-		return side == facing.rotateYCCW() || side == facing.rotateY();
+		Direction facing = state.getValue(HORIZONTAL_FACING);
+		return side == facing.getCounterClockWise() || side == facing.getClockWise();
 	}
 
 	@Override
 	public boolean isOutputSide(BlockState state, Direction side)
 	{
-		Direction facing = state.get(HORIZONTAL_FACING);
+		Direction facing = state.getValue(HORIZONTAL_FACING);
 		return side == facing || side == facing.getOpposite();
 	}
 
 	@Override
 	public boolean shouldBePowered(BlockState state, World world, BlockPos pos)
 	{
-		Direction facing = state.get(HORIZONTAL_FACING);
-		boolean left = isPowered(world, pos, facing.rotateYCCW());
-		boolean right = isPowered(world, pos, facing.rotateY());
+		Direction facing = state.getValue(HORIZONTAL_FACING);
+		boolean left = isPowered(world, pos, facing.getCounterClockWise());
+		boolean right = isPowered(world, pos, facing.getClockWise());
 
 		switch (type)
 		{
@@ -49,7 +49,7 @@ public class BlockLatch extends BlockGateBase
 				if (right) return false;
 				break;
 		}
-		return state.get(POWERED);
+		return state.getValue(POWERED);
 	}
 
 	public enum Type
@@ -72,14 +72,14 @@ public class BlockLatch extends BlockGateBase
 		@Override
 		public boolean isInputSide(BlockState state, Direction side)
 		{
-			Direction facing = state.get(HORIZONTAL_FACING);
-			return side == facing.rotateYCCW() || side == facing.rotateY();
+			Direction facing = state.getValue(HORIZONTAL_FACING);
+			return side == facing.getCounterClockWise() || side == facing.getClockWise();
 		}
 
 		@Override
 		public boolean isOutputSide(BlockState state, Direction side)
 		{
-			Direction facing = state.get(HORIZONTAL_FACING);
+			Direction facing = state.getValue(HORIZONTAL_FACING);
 			return side == facing || side == facing.getOpposite();
 		}
 
@@ -89,7 +89,7 @@ public class BlockLatch extends BlockGateBase
 			switch (type)
 			{
 				case D:
-					if (side == state.get(HORIZONTAL_FACING).rotateY()) scheduleTickIfNotScheduled(world, pos, 2);
+					if (side == state.getValue(HORIZONTAL_FACING).getClockWise()) scheduleTickIfNotScheduled(world, pos, 2);
 					break;
 				case TOGGLE:
 					if (!isPowered(world, pos, side.getOpposite())) scheduleTickIfNotScheduled(world, pos, 2);
@@ -103,11 +103,11 @@ public class BlockLatch extends BlockGateBase
 			switch (type)
 			{
 				case D:
-					return isPowered(world, pos, state.get(HORIZONTAL_FACING).rotateYCCW());
+					return isPowered(world, pos, state.getValue(HORIZONTAL_FACING).getCounterClockWise());
 				case TOGGLE:
-					return !state.get(POWERED);
+					return !state.getValue(POWERED);
 			}
-			return state.get(POWERED);
+			return state.getValue(POWERED);
 		}
 	}
 }

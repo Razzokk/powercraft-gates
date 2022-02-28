@@ -19,7 +19,7 @@ public class BlockGateBasic extends BlockGateBase
 	@Override
 	public boolean isInputSide(BlockState state, Direction side)
 	{
-		Direction facing = state.get(HORIZONTAL_FACING);
+		Direction facing = state.getValue(HORIZONTAL_FACING);
 		switch (type)
 		{
 			case BUFFER:
@@ -48,10 +48,10 @@ public class BlockGateBasic extends BlockGateBase
 	@Override
 	public boolean isOutputSide(BlockState state, Direction side)
 	{
-		Direction facing = state.get(HORIZONTAL_FACING);
+		Direction facing = state.getValue(HORIZONTAL_FACING);
 
 		if (type == Type.BUFFER_ALL || type == Type.NOT_ALL)
-			return side == facing || side == facing.rotateYCCW() || side == facing.rotateY();
+			return side == facing || side == facing.getCounterClockWise() || side == facing.getClockWise();
 
 		return side == facing;
 	}
@@ -59,10 +59,10 @@ public class BlockGateBasic extends BlockGateBase
 	@Override
 	public boolean shouldBePowered(BlockState state, World world, BlockPos pos)
 	{
-		Direction facing = state.get(HORIZONTAL_FACING);
-		boolean left = isPowered(world, pos, facing.rotateYCCW());
+		Direction facing = state.getValue(HORIZONTAL_FACING);
+		boolean left = isPowered(world, pos, facing.getCounterClockWise());
 		boolean back = isPowered(world, pos, facing.getOpposite());
-		boolean right = isPowered(world, pos, facing.rotateY());
+		boolean right = isPowered(world, pos, facing.getClockWise());
 
 		switch (type)
 		{
@@ -89,13 +89,13 @@ public class BlockGateBasic extends BlockGateBase
 			case NAND_3:
 				return !(left && back && right);
 			case XOR_2:
-				return left && !right || !left && right;
+				return left ^ right;
 			case XOR_3:
-				return left && !back && !right || !left && back && !right || !left && !back && right;
+				return left ^ right ^ back;
 			case XNOR_2:
-				return !(left && !right || !left && right);
+				return left == right;
 			case XNOR_3:
-				return !(left && !back && !right || !left && back && !right || !left && !back && right);
+				return !(left ^ right ^ back);
 		}
 		return false;
 	}

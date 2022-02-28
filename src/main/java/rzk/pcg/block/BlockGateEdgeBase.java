@@ -32,8 +32,8 @@ public abstract class BlockGateEdgeBase extends BlockRedstoneDeviceEdge
 {
 	public BlockGateEdgeBase()
 	{
-		super(Properties.create(Material.ROCK).hardnessAndResistance(0.5f).sound(SoundType.STONE));
-		setDefaultState(getDefaultState().with(HORIZONTAL_FACING, Direction.NORTH));
+		super(Properties.of(Material.STONE).strength(0.5f).sound(SoundType.STONE));
+		registerDefaultState(defaultBlockState().setValue(HORIZONTAL_FACING, Direction.NORTH));
 	}
 
 	public abstract boolean shouldBePowered(BlockState state, World world, BlockPos pos);
@@ -42,7 +42,7 @@ public abstract class BlockGateEdgeBase extends BlockRedstoneDeviceEdge
 	public void tick(BlockState state, ServerWorld world, BlockPos pos, Random rand)
 	{
 		boolean shouldBePowered = shouldBePowered(state, world, pos);
-		if (state.get(POWERED) != shouldBePowered)
+		if (state.getValue(POWERED) != shouldBePowered)
 			setPoweredState(state, world, pos, shouldBePowered);
 	}
 
@@ -50,11 +50,11 @@ public abstract class BlockGateEdgeBase extends BlockRedstoneDeviceEdge
 	@Override
 	public BlockState getStateForPlacement(BlockItemUseContext context)
 	{
-		return getDefaultState().with(HORIZONTAL_FACING, context.getPlacementHorizontalFacing());
+		return defaultBlockState().setValue(HORIZONTAL_FACING, context.getHorizontalDirection());
 	}
 
 	@Override
-	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder)
+	protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
 	{
 		builder.add(POWERED, HORIZONTAL_FACING);
 	}
@@ -74,13 +74,13 @@ public abstract class BlockGateEdgeBase extends BlockRedstoneDeviceEdge
 	@OnlyIn(Dist.CLIENT)
 	public void animateTick(BlockState state, World world, BlockPos pos, Random rand)
 	{
-		if (state.get(POWERED))
+		if (state.getValue(POWERED))
 		{
 			double d0 = (double) pos.getX() + 0.5D + (rand.nextDouble() - 0.5D) * 0.2D;
 			double d1 = (double) pos.getY() + 0.3D + (rand.nextDouble() - 0.5D) * 0.2D;
 			double d2 = (double) pos.getZ() + 0.5D + (rand.nextDouble() - 0.5D) * 0.2D;
 
-			world.addParticle(RedstoneParticleData.REDSTONE_DUST, d0, d1, d2, 0.0D, 0.0D, 0.0D);
+			world.addParticle(RedstoneParticleData.REDSTONE, d0, d1, d2, 0.0D, 0.0D, 0.0D);
 		}
 	}
 }

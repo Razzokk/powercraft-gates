@@ -33,19 +33,19 @@ public class BlockTimer extends BlockGateEdgeBase
 	@Override
 	public boolean isInputSide(BlockState state, Direction side)
 	{
-		return side == state.get(HORIZONTAL_FACING).getOpposite();
+		return side == state.getValue(HORIZONTAL_FACING).getOpposite();
 	}
 
 	@Override
 	public boolean isOutputSide(BlockState state, Direction side)
 	{
-		Direction facing = state.get(HORIZONTAL_FACING);
-		return side == facing || side == facing.rotateYCCW() || side == facing.rotateY();
+		Direction facing = state.getValue(HORIZONTAL_FACING);
+		return side == facing || side == facing.getCounterClockWise() || side == facing.getClockWise();
 	}
 
 	protected void setEnabled(World world, BlockPos pos, boolean enabled)
 	{
-		if (!world.isRemote)
+		if (!world.isClientSide)
 			WorldUtils.ifTilePresent(world, pos, TileTimer.class, tile -> tile.setEnabled(enabled));
 	}
 
@@ -62,15 +62,15 @@ public class BlockTimer extends BlockGateEdgeBase
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
+	public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
 	{
-		setEnabled(world, pos, !isPowered(world, pos, state.get(HORIZONTAL_FACING).getOpposite()));
+		setEnabled(world, pos, !isPowered(world, pos, state.getValue(HORIZONTAL_FACING).getOpposite()));
 	}
 
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit)
+	public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult)
 	{
-		if (world.isRemote)
+		if (world.isClientSide)
 			DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> GuiTimer.openGui(pos));
 		return ActionResultType.SUCCESS;
 	}
@@ -105,7 +105,7 @@ public class BlockTimer extends BlockGateEdgeBase
 		@Override
 		public boolean isOutputSide(BlockState state, Direction side)
 		{
-			return side == state.get(HORIZONTAL_FACING);
+			return side == state.getValue(HORIZONTAL_FACING);
 		}
 
 		@Override
@@ -125,9 +125,9 @@ public class BlockTimer extends BlockGateEdgeBase
 		}
 
 		@Override
-		public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
+		public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
 		{
-			boolean isPowered = isPowered(world, pos, state.get(HORIZONTAL_FACING).getOpposite());
+			boolean isPowered = isPowered(world, pos, state.getValue(HORIZONTAL_FACING).getOpposite());
 			setEnabled(world, pos, (type == Type.ON && isPowered) || (type == Type.OFF && !isPowered));
 		}
 

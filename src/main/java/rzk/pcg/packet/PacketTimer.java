@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 
 public class PacketTimer extends Packet
 {
-	private int delay;
-	private BlockPos pos;
+	private final int delay;
+	private final BlockPos pos;
 
 	public PacketTimer(int delay, BlockPos pos)
 	{
@@ -26,14 +26,14 @@ public class PacketTimer extends Packet
 	{
 		super(buffer);
 		delay = buffer.readInt();
-		pos = BlockPos.fromLong(buffer.readLong());
+		pos = BlockPos.of(buffer.readLong());
 	}
 
 	@Override
 	public void toBytes(PacketBuffer buffer)
 	{
 		buffer.writeInt(delay);
-		buffer.writeLong(pos.toLong());
+		buffer.writeLong(pos.asLong());
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class PacketTimer extends Packet
 		{
 			ServerPlayerEntity player = ctx.get().getSender();
 			ServerWorld world;
-			if (player != null && (world = player.getServerWorld()).isBlockLoaded(pos))
+			if (player != null && (world = player.getLevel()).isLoaded(pos))
 				WorldUtils.ifTilePresent(world, pos, TileTimer.class, tile -> tile.setDelay(delay));
 		});
 		ctx.get().setPacketHandled(true);

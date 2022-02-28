@@ -24,7 +24,7 @@ public class BlockSensor extends BlockGateBase
 	@Override
 	public boolean isOutputSide(BlockState state, Direction side)
 	{
-		return side.getHorizontalIndex() != -1;
+		return side.get2DDataValue() != -1;
 	}
 
 	@Override
@@ -33,9 +33,9 @@ public class BlockSensor extends BlockGateBase
 		switch (type)
 		{
 			case DAY:
-				return world.isDaytime();
+				return world.isDay();
 			case NIGHT:
-				return world.isNightTime();
+				return world.isNight();
 			case RAIN:
 				return world.isRaining();
 			case THUNDER:
@@ -76,24 +76,24 @@ public class BlockSensor extends BlockGateBase
 		@Override
 		public boolean isOutputSide(BlockState state, Direction side)
 		{
-			return side == state.get(HORIZONTAL_FACING);
+			return side == state.getValue(HORIZONTAL_FACING);
 		}
 
 		@Override
 		public boolean shouldBePowered(BlockState state, World world, BlockPos pos)
 		{
-			BlockPos blockpos = pos.offset(state.get(HORIZONTAL_FACING).getOpposite());
+			BlockPos blockpos = pos.relative(state.getValue(HORIZONTAL_FACING).getOpposite());
 			BlockState blockstate = world.getBlockState(blockpos);
 
-			if (blockstate.hasComparatorInputOverride())
+			if (blockstate.hasAnalogOutputSignal())
 			{
-				int level = blockstate.getComparatorInputOverride(world, blockpos);
+				int level = blockstate.getAnalogOutputSignal(world, blockpos);
 				switch (type)
 				{
 					case CHEST_EMPTY:
 						return level == 0;
 					case CHEST_SPACE:
-						return level > 0 && level < 14;
+						return level < 14;
 					case CHEST_FULL:
 						return level >= 14;
 				}
@@ -104,10 +104,10 @@ public class BlockSensor extends BlockGateBase
 		@Override
 		public void onNeighborChange(BlockState state, IWorldReader world, BlockPos pos, BlockPos neighbor)
 		{
-			if (!world.isRemote())
+			if (!world.isClientSide())
 			{
 				Direction side = Utils.getFromBlockPos(pos, neighbor);
-				if (side == state.get(HORIZONTAL_FACING).getOpposite() && pos.getY() == neighbor.getY() && world instanceof World)
+				if (side == state.getValue(HORIZONTAL_FACING).getOpposite() && pos.getY() == neighbor.getY() && world instanceof World)
 					scheduleTickIfNotScheduled((World) world, pos, 2);
 			}
 		}
@@ -125,13 +125,13 @@ public class BlockSensor extends BlockGateBase
 		@Override
 		public boolean isInputSide(BlockState state, Direction side)
 		{
-			return side == state.get(HORIZONTAL_FACING).getOpposite();
+			return side == state.getValue(HORIZONTAL_FACING).getOpposite();
 		}
 
 		@Override
 		public boolean isOutputSide(BlockState state, Direction side)
 		{
-			return side == state.get(HORIZONTAL_FACING);
+			return side == state.getValue(HORIZONTAL_FACING);
 		}
 
 		@Override

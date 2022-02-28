@@ -29,8 +29,8 @@ public class SizedButton extends Button
 	public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
 	{
 		Minecraft minecraft = Minecraft.getInstance();
-		FontRenderer fontrenderer = minecraft.fontRenderer;
-		minecraft.getTextureManager().bindTexture(WIDGETS_LOCATION);
+		FontRenderer fontrenderer = minecraft.font;
+		minecraft.getTextureManager().bind(WIDGETS_LOCATION);
 		RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
 		int i = getYImage(isHovered());
 		RenderSystem.enableBlend();

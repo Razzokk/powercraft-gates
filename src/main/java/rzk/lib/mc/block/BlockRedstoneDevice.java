@@ -22,7 +22,7 @@ public abstract class BlockRedstoneDevice extends Block
 	public BlockRedstoneDevice(Properties properties)
 	{
 		super(properties);
-		setDefaultState(stateContainer.getBaseState().with(POWERED, false));
+		registerDefaultState(stateDefinition.any().setValue(POWERED, false));
 	}
 
 	protected boolean isInputSide(BlockState state, Direction side)
@@ -45,19 +45,19 @@ public abstract class BlockRedstoneDevice extends Block
 	}
 
 	@Override
-	public boolean canProvidePower(BlockState state)
+	public boolean isSignalSource(BlockState p_149744_1_)
 	{
 		return true;
 	}
 
 	protected int getInputPower(World world, BlockPos pos, Direction side)
 	{
-		BlockPos blockpos = pos.offset(side);
-		int i = world.getRedstonePower(blockpos, side);
+		BlockPos blockpos = pos.relative(side);
+		int i = world.getSignal(blockpos, side);
 		if (i >= 15) return 15;
 
 		BlockState state = world.getBlockState(blockpos);
-		return Math.max(i, state.getBlock().equals(Blocks.REDSTONE_WIRE) ? state.get(RedstoneWireBlock.POWER) : 0);
+		return Math.max(i, state.getBlock().equals(Blocks.REDSTONE_WIRE) ? state.getValue(RedstoneWireBlock.POWER) : 0);
 	}
 
 	protected boolean isPowered(World world, BlockPos pos, Direction... sides)
@@ -74,35 +74,35 @@ public abstract class BlockRedstoneDevice extends Block
 
 	protected int getOutputPower(BlockState state, IBlockReader world, BlockPos pos, Direction side)
 	{
-		return state.get(POWERED) && isOutputSide(state, side) ? 15 : 0;
+		return state.getValue(POWERED) && isOutputSide(state, side) ? 15 : 0;
 	}
 
 	@Override
-	public int getWeakPower(BlockState state, IBlockReader world, BlockPos pos, Direction side)
+	public int getSignal(BlockState state, IBlockReader blockReader, BlockPos pos, Direction side)
 	{
-		return getOutputPower(state, world, pos, side.getOpposite());
+		return getOutputPower(state, blockReader, pos, side.getOpposite());
 	}
 
 	@Override
-	public int getStrongPower(BlockState state, IBlockReader world, BlockPos pos, Direction side)
+	public int getDirectSignal(BlockState state, IBlockReader blockReader, BlockPos pos, Direction side)
 	{
-		return getOutputPower(state, world, pos, side.getOpposite());
+		return getOutputPower(state, blockReader, pos, side.getOpposite());
 	}
 
 	protected void onInputChanged(BlockState state, World world, BlockPos pos, Direction side) {}
 
 	protected void updateNeighborsInFront(BlockState state, World world, BlockPos pos, Direction side)
 	{
-		BlockPos blockpos = pos.offset(side);
+		BlockPos blockpos = pos.relative(side);
 		if (ForgeEventFactory.onNeighborNotify(world, pos, world.getBlockState(pos), EnumSet.of(side), false).isCanceled())
 			return;
 		world.neighborChanged(blockpos, this, pos);
-		world.notifyNeighborsOfStateExcept(blockpos, this, side.getOpposite());
+		world.updateNeighborsAtExceptFromFacing(blockpos, this, side.getOpposite());
 	}
 
 	public void setPoweredState(BlockState state, World world, BlockPos pos, boolean powered)
 	{
-		world.setBlockState(pos, state.with(POWERED, powered));
+		world.setBlockAndUpdate(pos, state.setValue(POWERED, powered));
 		for (Direction side : Direction.values())
 			if (isOutputSide(state, side))
 				updateNeighborsInFront(state, world, pos, side);
@@ -110,8 +110,8 @@ public abstract class BlockRedstoneDevice extends Block
 
 	public void scheduleTickIfNotScheduled(World world, BlockPos pos, int delay)
 	{
-		if (!world.getPendingBlockTicks().isTickScheduled(pos, this))
-			world.getPendingBlockTicks().scheduleTick(pos, this, delay);
+		if (!world.getBlockTicks().hasScheduledTick(pos, this))
+			world.getBlockTicks().scheduleTick(pos, this, delay);
 	}
 
 	@Override
@@ -123,7 +123,7 @@ public abstract class BlockRedstoneDevice extends Block
 	}
 
 	@Override
-	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder)
+	protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
 	{
 		builder.add(POWERED);
 	}

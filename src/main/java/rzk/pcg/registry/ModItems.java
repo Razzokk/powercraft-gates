@@ -14,6 +14,6 @@ public final class ModItems
 
 	public static Item.Properties defaultItemProperties()
 	{
-		return new Item.Properties().group(PCGates.ITEM_GROUP_PC_GATES);
+		return new Item.Properties().tab(PCGates.ITEM_GROUP_PC_GATES);
 	}
 }

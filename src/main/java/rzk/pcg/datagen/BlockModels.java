@@ -34,7 +34,7 @@ public class BlockModels extends BlockStateProvider
 	{
 		Function<BlockState, ModelFile> modelFunc = state ->
 		{
-			boolean powered = state.get(BlockStateProperties.POWERED);
+			boolean powered = state.getValue(BlockStateProperties.POWERED);
 			String name = name(block) + "_" + (powered ? "on" : "off");
 			return models().getBuilder(name)
 					.texture("top", modLoc("blocks/" + name))
@@ -44,7 +44,7 @@ public class BlockModels extends BlockStateProvider
 		getVariantBuilder(block)
 				.forAllStates(state -> ConfiguredModel.builder()
 						.modelFile(modelFunc.apply(state))
-						.rotationY(((int) state.get(BlockStateProperties.HORIZONTAL_FACING).getHorizontalAngle() + 180) % 360)
+						.rotationY(((int) state.getValue(BlockStateProperties.HORIZONTAL_FACING).toYRot() + 180) % 360)
 						.build());
 	}
 }

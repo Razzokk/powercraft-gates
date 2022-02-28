@@ -41,7 +41,7 @@ public class GuiCounter extends Screen
 	public GuiCounter(BlockPos pos)
 	{
 		super(new TranslationTextComponent("gui.pcg.counter"));
-		maxCount = WorldUtils.mapTile(Minecraft.getInstance().world, pos, TileCounter.class, TileCounter::getMaxCount);
+		maxCount = WorldUtils.mapTile(Minecraft.getInstance().level, pos, TileCounter.class, TileCounter::getMaxCount);
 		this.pos = pos;
 	}
 
@@ -63,7 +63,7 @@ public class GuiCounter extends Screen
 		maxCountField = new TextFieldWidget(font, guiLeft + 45, guiTop + 20, 38, 16, new TranslationTextComponent("gui.pcg.counter.max_count"))
 		{
 			@Override
-			public void writeText(String textToWrite)
+			public void insertText(String textToWrite)
 			{
 				StringBuilder stringbuilder = new StringBuilder();
 
@@ -71,12 +71,12 @@ public class GuiCounter extends Screen
 					if (c0 >= 48 && c0 <= 57)
 						stringbuilder.append(c0);
 
-				super.writeText(stringbuilder.toString());
+				super.insertText(stringbuilder.toString());
 			}
 		};
 
-		maxCountField.setMaxStringLength(5);
-		maxCountField.setText(String.valueOf(maxCount));
+		maxCountField.setMaxLength(5);
+		maxCountField.setValue(String.valueOf(maxCount));
 		maxCountField.setResponder(text ->
 		{
 			boolean textValid = text != null && !text.isEmpty();
@@ -94,7 +94,7 @@ public class GuiCounter extends Screen
 	private void buttonPressed(Button button)
 	{
 		setMaxCount(maxCount + Integer.parseInt(button.getMessage().getString()));
-		maxCountField.setText(String.valueOf(maxCount));
+		maxCountField.setValue(String.valueOf(maxCount));
 	}
 
 	@Override
@@ -111,7 +111,7 @@ public class GuiCounter extends Screen
 				break;
 		}
 
-		return maxCountField.keyPressed(keyCode, scanCode, modifiers) || maxCountField.canWrite() || super.keyPressed(keyCode, scanCode, modifiers);
+		return maxCountField.keyPressed(keyCode, scanCode, modifiers) || maxCountField.canConsumeInput() || super.keyPressed(keyCode, scanCode, modifiers);
 	}
 
 	@Override
@@ -135,28 +135,28 @@ public class GuiCounter extends Screen
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
 	{
 		renderBackground(matrixStack);
-		drawGuiBackgroundTexture(matrixStack, mouseX, mouseY, partialTicks);
+		drawGuiBackgroundTexture(matrixStack);
 		maxCountField.render(matrixStack, mouseX, mouseY, partialTicks);
-		font.drawString(matrixStack, title.getString(), guiLeft + (xSize - font.getStringWidth(title.getString())) / 2, guiTop + 5, 0x404040);
-		font.drawString(matrixStack, "max.", guiLeft + (xSize - font.getStringWidth(title.getString())) / 2, guiTop + 40, 0x404040);
+		font.draw(matrixStack, title.getString(), guiLeft + (xSize - font.width(title.getString())) / 2, guiTop + 5, 0x404040);
+		font.draw(matrixStack, "max.", guiLeft + (xSize - font.width(title.getString())) / 2, guiTop + 40, 0x404040);
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
 
-	private void drawGuiBackgroundTexture(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+	private void drawGuiBackgroundTexture(MatrixStack matrixStack)
 	{
 		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-		minecraft.getTextureManager().bindTexture(GUI_TEXTURE);
+		minecraft.getTextureManager().bind(GUI_TEXTURE);
 		blit(matrixStack, guiLeft, guiTop, 0, 0, xSize, ySize);
 	}
 
 	private void sendCounterPacket()
 	{
-		PacketHandler.INSTANCE.sendToServer(new PacketCounter(Integer.parseInt(maxCountField.getText()), pos));
-		minecraft.player.closeScreen();
+		PacketHandler.INSTANCE.sendToServer(new PacketCounter(Integer.parseInt(maxCountField.getValue()), pos));
+		onClose();
 	}
 
 	public static DistExecutor.SafeRunnable openGui(BlockPos pos)
 	{
-		return () -> Minecraft.getInstance().displayGuiScreen(new GuiCounter(pos));
+		return () -> Minecraft.getInstance().setScreen(new GuiCounter(pos));
 	}
 }

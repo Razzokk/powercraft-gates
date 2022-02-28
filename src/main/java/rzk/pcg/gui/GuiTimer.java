@@ -41,7 +41,7 @@ public class GuiTimer extends Screen
 	public GuiTimer(BlockPos pos)
 	{
 		super(new TranslationTextComponent("gui.pcg.timer"));
-		delay = WorldUtils.mapTile(Minecraft.getInstance().world, pos, TileTimer.class, TileTimer::getDelay);
+		delay = WorldUtils.mapTile(Minecraft.getInstance().level, pos, TileTimer.class, TileTimer::getDelay);
 		this.pos = pos;
 	}
 
@@ -62,7 +62,7 @@ public class GuiTimer extends Screen
 		delayField = new TextFieldWidget(font, guiLeft + 45, guiTop + 20, 38, 16, new TranslationTextComponent("gui.pcg.timer.delay"))
 		{
 			@Override
-			public void writeText(String textToWrite)
+			public void insertText(String textToWrite)
 			{
 				StringBuilder stringbuilder = new StringBuilder();
 
@@ -70,12 +70,12 @@ public class GuiTimer extends Screen
 					if (c0 >= 48 && c0 <= 57)
 						stringbuilder.append(c0);
 
-				super.writeText(stringbuilder.toString());
+				super.insertText(stringbuilder.toString());
 			}
 		};
 
-		delayField.setMaxStringLength(5);
-		delayField.setText(String.valueOf(delay));
+		delayField.setMaxLength(5);
+		delayField.setValue(String.valueOf(delay));
 		delayField.setResponder(text ->
 		{
 			boolean textValid = text != null && !text.isEmpty();
@@ -93,7 +93,7 @@ public class GuiTimer extends Screen
 	private void buttonPressed(Button button)
 	{
 		setDelay(delay +  Integer.parseInt(button.getMessage().getString()));
-		delayField.setText(String.valueOf(delay));
+		delayField.setValue(String.valueOf(delay));
 	}
 
 	@Override
@@ -110,7 +110,7 @@ public class GuiTimer extends Screen
 				break;
 		}
 
-		return delayField.keyPressed(keyCode, scanCode, modifiers) || delayField.canWrite() || super.keyPressed(keyCode, scanCode, modifiers);
+		return delayField.keyPressed(keyCode, scanCode, modifiers) || delayField.canConsumeInput() || super.keyPressed(keyCode, scanCode, modifiers);
 	}
 
 	@Override
@@ -136,26 +136,26 @@ public class GuiTimer extends Screen
 		renderBackground(matrixStack);
 		drawGuiBackgroundTexture(matrixStack, mouseX, mouseY, partialTicks);
 		delayField.render(matrixStack, mouseX, mouseY, partialTicks);
-		font.drawString(matrixStack, title.getString(), guiLeft + (xSize - font.getStringWidth(title.getString())) / 2, guiTop + 5, 0x404040);
-		font.drawString(matrixStack, "Ticks", guiLeft + (xSize - font.getStringWidth(title.getString())) / 2, guiTop + 40, 0x404040);
+		font.draw(matrixStack, title.getString(), guiLeft + (xSize - font.width(title.getString())) / 2, guiTop + 5, 0x404040);
+		font.draw(matrixStack, "Ticks", guiLeft + (xSize - font.width(title.getString())) / 2, guiTop + 40, 0x404040);
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
 
 	private void drawGuiBackgroundTexture(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
 	{
 		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-		minecraft.getTextureManager().bindTexture(GUI_TEXTURE);
+		minecraft.getTextureManager().bind(GUI_TEXTURE);
 		blit(matrixStack, guiLeft, guiTop, 0, 0, xSize, ySize);
 	}
 
 	private void sendDelayPacket()
 	{
 		PacketHandler.INSTANCE.sendToServer(new PacketTimer(delay, pos));
-		minecraft.player.closeScreen();
+		onClose();
 	}
 
 	public static DistExecutor.SafeRunnable openGui(BlockPos pos)
 	{
-		return () -> Minecraft.getInstance().displayGuiScreen(new GuiTimer(pos));
+		return () -> Minecraft.getInstance().setScreen(new GuiTimer(pos));
 	}
 }

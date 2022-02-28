@@ -35,19 +35,19 @@ public class BlockCounter extends BlockGateEdgeBase
 	@Override
 	protected boolean isInputSide(BlockState state, Direction side)
 	{
-		return side.getHorizontalIndex() != -1 && !isOutputSide(state, side);
+		return side.get2DDataValue() != -1 && !isOutputSide(state, side);
 	}
 
 	@Override
 	protected boolean isOutputSide(BlockState state, Direction side)
 	{
-		return side == state.get(HORIZONTAL_FACING);
+		return side == state.getValue(HORIZONTAL_FACING);
 	}
 
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit)
+	public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult)
 	{
-		if (world.isRemote)
+		if (world.isClientSide)
 			DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> GuiCounter.openGui(pos));
 		return ActionResultType.SUCCESS;
 	}
@@ -55,15 +55,15 @@ public class BlockCounter extends BlockGateEdgeBase
 	@Override
 	protected void onInputHigh(BlockState state, World world, BlockPos pos, Direction side)
 	{
-		if (!world.isRemote)
+		if (!world.isClientSide)
 		{
-			Direction facing = world.getBlockState(pos).get(HORIZONTAL_FACING);
+			Direction facing = world.getBlockState(pos).getValue(HORIZONTAL_FACING);
 
 			if (side == facing.getOpposite())
 				reset(world, pos);
-			else if (side == facing.rotateY())
+			else if (side == facing.getClockWise())
 				count(world, pos, -1);
-			else if (side == facing.rotateYCCW())
+			else if (side == facing.getCounterClockWise())
 				count(world, pos, 1);
 		}
 	}

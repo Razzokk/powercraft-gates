@@ -22,14 +22,14 @@ public class CounterRenderer extends TileEntityRenderer<TileCounter>
 	@Override
 	public void render(TileCounter tile, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay)
 	{
-		matrixStack.push();
-		FontRenderer fontrenderer = this.renderDispatcher.getFontRenderer();
+		matrixStack.pushPose();
+		FontRenderer fontrenderer = renderer.getFont();
 		matrixStack.translate(0.5, 0.19, 0.5);
-		matrixStack.rotate(new Quaternion(270, 0, 180 - tile.getBlockState().get(BlockStateProperties.HORIZONTAL_FACING).getHorizontalAngle(), true));
+		matrixStack.mulPose(new Quaternion(270, 0, 180 - tile.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING).toYRot(), true));
 		matrixStack.scale(1f / 96, -1f / 96, 1f / 96);
 		String s = tile.getCounter() + "/" + tile.getMaxCount();
-		float f3 = (float) (-fontrenderer.getStringWidth(s) / 2);
-		fontrenderer.renderString(s, f3, -4, 0, false, matrixStack.getLast().getMatrix(), buffer, false, 0, combinedLight);
-		matrixStack.pop();
+		float f3 = (float) (-fontrenderer.width(s) / 2);
+		fontrenderer.drawInBatch(s, f3, -4, 0, false, matrixStack.last().pose(), buffer, false, 0, combinedLight);
+		matrixStack.popPose();
 	}
 }

@@ -27,24 +27,23 @@ public class TileRedstoneDevice extends TileEntity implements ITileRedstoneState
 	}
 
 	@Override
-	public ITileRedstoneStates setRedstoneStates(byte states)
+	public void setRedstoneStates(byte states)
 	{
 		this.states = states;
-		return this;
 	}
 
 	@Override
-	public CompoundNBT write(CompoundNBT compound)
+	public void load(BlockState state, CompoundNBT nbt)
 	{
-		super.write(compound);
-		compound.putByte("states", states);
-		return compound;
+		super.load(state, nbt);
+		states = nbt.getByte("states");
 	}
 
 	@Override
-	public void read(BlockState state, CompoundNBT compound)
+	public CompoundNBT save(CompoundNBT nbt)
 	{
-		super.read(state, compound);
-		states = compound.getByte("states");
+		super.save(nbt);
+		nbt.putByte("states", states);
+		return nbt;
 	}
 }

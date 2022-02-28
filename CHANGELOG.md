@@ -1,3 +1,8 @@
+### Version 1.16.5-1.1.4:
+
+- FIX: Chest has space sensor not outputting a signal when chest is empty
+- Update to official mappings and 1.16.5/forge
+
 ### Version 1.16.3-1.1.3:
 
 - BUGFIX: Crash when showing creative tab

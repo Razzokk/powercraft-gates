@@ -1,6 +1,0 @@
-{
-  "parent": "pcg:block/gate",
-  "textures": {
-    "top": "pcg:blocks/gate_buffer_all_on"
-  }
-}
